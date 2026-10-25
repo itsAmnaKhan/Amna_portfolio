@@ -186,6 +186,14 @@
     .fact dd { margin: 0; font-weight: 500; }
     @media (max-width: 900px) { .about-grid { grid-template-columns: 1fr; gap: 36px; } }
 
+    /* ---------- Imaging ---------- */
+    .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
+    .xp { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .xp h3 { font-size: 24px; }
+    .xp ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 8px; }
+    .xp .nums { display: flex; flex-wrap: wrap; gap: 8px; }
+    @media (max-width: 900px) { .img-grid { grid-template-columns: 1fr; } }
+
     /* ---------- Journey ---------- */
     .journey { background: var(--ink); color: var(--bg); }
     .journey .label, .journey .section-head p { color: color-mix(in srgb, var(--bg) 65%, var(--ink)); }
@@ -404,6 +412,7 @@
       </a>
       <nav class="nav-links" id="navLinks" aria-label="Primary">
         <a href="#about">About</a>
+        <a href="#imaging">Imaging</a>
         <a href="#journey">Research</a>
         <a href="#publications">Publications</a>
         <a href="#projects">Projects</a>
@@ -433,7 +442,7 @@
               <span class="name">Amna Khan</span>
               Turning pain into <em class="hl">possibility.</em>
             </h1>
-            <p class="lead">I'm a biomedical engineer working on medical imaging, biosignal processing and medical device design. I build teams around a shared goal and turn clinical problems into working systems.</p>
+            <p class="lead">I'm a biomedical engineer specialising in AI for medical imaging: 3D tumour segmentation on CT and PET/CT, now at University Hospital Augsburg. I also work on biosignal processing and medical device design. I build teams around a shared goal and turn clinical problems into working systems.</p>
             <div class="cta-row">
               <a class="btn btn-primary" href="#projects">Explore my work <svg><use href="#i-arrow"/></svg></a>
               <a class="btn btn-ghost" href="#contact">Get in touch</a>
@@ -443,7 +452,7 @@
             <div class="portrait-frame">
               <img src="Images/amna.jpg" alt="Portrait of Amna Khan" width="1200" height="1600" />
             </div>
-            <div class="badge badge-b"><span class="dot"></span>Türkiye Bursları Scholar</div>
+            <div class="badge badge-b"><span class="dot"></span>Medical Imaging · UKA</div>
             <div class="badge badge-a"><b>Hult Prize</b>On-campus winner &amp; Global Summit</div>
           </div>
         </div>
@@ -458,8 +467,8 @@
         <div class="stats reveal">
           <div class="stat"><b>3</b><span>Conference publications</span></div>
           <div class="stat"><b>11</b><span>Engineering projects</span></div>
-          <div class="stat"><b>6</b><span>Biosignals fused for stress detection</span></div>
-          <div class="stat"><b>90%</b><span>Stress classification accuracy</span></div>
+          <div class="stat"><b>0.84</b><span>Dice on PSMA-PET/CT segmentation</span></div>
+          <div class="stat"><b>62%</b><span>Fewer false-positive lesions</span></div>
         </div>
       </div>
     </section>
@@ -486,6 +495,39 @@
           <div class="fact"><dt>Tools</dt><dd>MATLAB · VOSviewer · CiteSpace · SolidWorks · AutoCAD · PASCO · PowerLab</dd></div>
           <div class="fact"><dt>Training</dt><dd>RISE-MICCAI Summer School, July 2025</dd></div>
         </dl>
+      </div>
+    </section>
+
+    <!-- ================= IMAGING ================= -->
+    <section id="imaging" style="padding-top:24px">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="label">Medical imaging</span>
+          <h2>AI that sees what <em class="hl">radiologists need</em></h2>
+          <p>3D segmentation of tumours on CT and PET/CT, built and checked with radiologists in the hospital.</p>
+        </div>
+        <div class="img-grid">
+          <article class="xp reveal">
+            <div class="card-top"><span class="cat">University Hospital Augsburg</span><span>May 2026 – now</span></div>
+            <h3>Medical Imaging Intern (Erasmus+)</h3>
+            <div class="nums"><span class="chip" style="background:var(--accent-soft);color:var(--accent);font-weight:700">Dice 0.78 → 0.84</span><span class="chip">−62% false positives</span><span class="chip">PSMA-PET/CT</span></div>
+            <ul>
+              <li>Designed an anatomy-guided post-processing pipeline for prostate cancer PSMA-PET/CT segmentations, cutting false-positive lesions by 62% without losing true lesions.</li>
+              <li>Built Python evaluation workflows with CADS organ priors in the MUSIQ framework on a Slurm HPC cluster; benchmarked three models against physician-revised masks across two cohorts.</li>
+              <li>Reviewed failure cases with radiologists in ImFusion. Paper submitted to BVM 2027.</li>
+            </ul>
+          </article>
+          <article class="xp reveal">
+            <div class="card-top"><span class="cat">AI Lab, Balcalı Hospital</span><span>2024 – 2026</span></div>
+            <h3>Medical Imaging Researcher (Master's thesis)</h3>
+            <div class="nums"><span class="chip" style="background:var(--accent-soft);color:var(--accent);font-weight:700">Dice 0.81 · IoU 0.69</span><span class="chip">Low-dose CT</span><span class="chip">MONAI · PyTorch</span></div>
+            <ul>
+              <li>Built a 3D differential convolution attention U-Net for lung tumour segmentation on 605 low-dose CT volumes (NLSTSeg), beating the baseline IoU of 0.42.</li>
+              <li>Segmented nodules from 0.03 cm³ to 372.2 cm³ and checked results against radiologist annotations in 3D Slicer.</li>
+            </ul>
+            <button class="linkish" data-open="1" style="align-self:start">See the lung cancer case study</button>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -915,6 +957,8 @@
     document.getElementById("houseStrip").innerHTML = HOUSE.map((h, i) => `<button data-lb="house" data-i="${i}" aria-label="View ${h[1]}"><img loading="lazy" src="${img(h[0])}" alt="${h[1]}" /></button>`).join("");
 
     const BEYOND = [
+      ["UKA/uka-1.jpg", "Radiology department, University Hospital Augsburg", "Clinical exposure", "tall"],
+      ["UKA/uka-2.jpg", "Radiology department visit, University Hospital Augsburg", "Clinical exposure", "tall"],
       ["RIC/CCUII.png", "Coronary Care Unit", "Clinical exposure", "tall"],
       ["RIC/Radiology.png", "Radiology department", "Clinical exposure", ""],
       ["RIC/cathlab.jpg", "Cardiac catheterization lab", "Clinical exposure", "wide"],
