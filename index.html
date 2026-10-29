@@ -1105,9 +1105,13 @@
         { n: 42, y: .60, a: [.11, .07], f: [2.4, 1.1], s: [-.18, .14], twist: -3.1, spread: .26, alpha: .16 },
         { n: 36, y: .84, a: [.05, .05], f: [1.1, 2.8], s: [.1, -.09], twist: 1.3, spread: .22, alpha: .13 }
       ];
-      // Desktop: two identical ribbons mirrored about the same centre line (dir), so they cross in step
+      // Desktop: two ribbons at the same speed so they cross in step, flipped (dir), tilted
+      // in opposite directions and phase-shifted (ph) so they flow rather than mirror exactly
       const wave = { n: 56, y: .6, a: [.17, .07], f: [1.6, 3.0], s: [.2, .12], twist: 2.2, spread: .3, alpha: .19 };
-      const DESKTOP_RIBBONS = [{ ...wave, dir: 1 }, { ...wave, dir: -1, n: 80, spread: .62, alpha: .16 }];
+      const DESKTOP_RIBBONS = [
+        { ...wave, dir: 1, tilt: .22, ph: 0 },
+        { ...wave, dir: -1, n: 80, spread: .62, alpha: .16, a: [.13, .09], tilt: -.28, ph: 1.2 }
+      ];
       document.querySelectorAll("canvas.waves").forEach(cv => {
         const ctx = cv.getContext("2d");
         let W = 0, H = 0, visible = true, raf = 0;
@@ -1130,8 +1134,9 @@
               ctx.beginPath();
               for (let x = 0; x <= W + 8; x += 8) {
                 const u = x / VW * Math.PI;
-                const y = H * (.64 + (r.y - .62) * pack) + (r.dir || 1) * A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist)
-                  + r.a[1] * Math.sin(u * r.f[1] + t * r.s[1] - s * r.twist * .6)
+                const ph = r.ph || 0;
+                const y = H * (.64 + (r.y - .62) * pack + (r.tilt || 0) * (x / W - .5)) + (r.dir || 1) * A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist + ph)
+                  + r.a[1] * Math.sin(u * r.f[1] + t * r.s[1] - s * r.twist * .6 + ph * .7)
                   + (s - .5) * r.spread * thick * Math.sin(u * 1.4 + t * .1));
                 x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
               }
