@@ -1100,11 +1100,14 @@
     // ---------- Wireframe waves (cover + contact) ----------
     (() => {
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const RIBBONS = [
+      const PHONE_RIBBONS = [
         { n: 48, y: .40, a: [.15, .08], f: [1.5, 3.2], s: [.22, -.16], twist: 2.6, spread: .30, alpha: .2 },
         { n: 42, y: .60, a: [.11, .07], f: [2.4, 1.1], s: [-.18, .14], twist: -3.1, spread: .26, alpha: .16 },
         { n: 36, y: .84, a: [.05, .05], f: [1.1, 2.8], s: [.1, -.09], twist: 1.3, spread: .22, alpha: .13 }
       ];
+      // Desktop: two identical ribbons mirrored about the same centre line (dir), so they cross in step
+      const wave = { n: 56, y: .6, a: [.17, .07], f: [1.6, 3.0], s: [.2, .12], twist: 2.2, spread: .3, alpha: .19 };
+      const DESKTOP_RIBBONS = [{ ...wave, dir: 1 }, { ...wave, dir: -1 }];
       document.querySelectorAll("canvas.waves").forEach(cv => {
         const ctx = cv.getContext("2d");
         let W = 0, H = 0, visible = true, raf = 0;
@@ -1120,14 +1123,14 @@
           ctx.lineWidth = .7;
           // Narrow screens see a slice of a wider wave; ribbons are packed together so they overlap
           const VW = Math.max(W, 900), pack = W < 700 ? .5 : .58, thick = 2 - pack, A = Math.min(H, VW * .45);
-          for (const r of RIBBONS) {
+          for (const r of W < 700 ? PHONE_RIBBONS : DESKTOP_RIBBONS) {
             ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
             for (let j = 0; j < r.n; j++) {
               const s = j / (r.n - 1);
               ctx.beginPath();
               for (let x = 0; x <= W + 8; x += 8) {
                 const u = x / VW * Math.PI;
-                const y = H * (.64 + (r.y - .62) * pack) + A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist)
+                const y = H * (.64 + (r.y - .62) * pack) + (r.dir || 1) * A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist)
                   + r.a[1] * Math.sin(u * r.f[1] + t * r.s[1] - s * r.twist * .6)
                   + (s - .5) * r.spread * thick * Math.sin(u * 1.4 + t * .1));
                 x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
