@@ -1105,13 +1105,41 @@
         { n: 42, y: .60, a: [.11, .07], f: [2.4, 1.1], s: [-.18, .14], twist: -3.1, spread: .26, alpha: .16 },
         { n: 36, y: .84, a: [.05, .05], f: [1.1, 2.8], s: [.1, -.09], twist: 1.3, spread: .22, alpha: .13 }
       ];
-      // Desktop: two ribbons at the same speed so they cross in step, flipped (dir), tilted
-      // in opposite directions and phase-shifted (ph) so they flow rather than mirror exactly
-      const wave = { n: 56, y: .6, a: [.17, .07], f: [1.6, 3.0], s: [.2, .12], twist: 2.2, spread: .3, alpha: .19 };
-      const DESKTOP_RIBBONS = [
-        { ...wave, dir: 1, tilt: .22, ph: 0 },
-        { ...wave, dir: -1, n: 80, spread: .62, alpha: .16, a: [.13, .09], tilt: -.28, ph: 1.2 }
+      // Desktop, after the cover: a rolling mesh "sea" whose lines stack down to the bottom,
+      // with silk ribbons that pinch and flip (wid) as they ride over it. Everything rolls rightwards.
+      const sea = (u, t) => .36 + .13 * Math.sin(u * 1.2 - t * .16) + .07 * Math.sin(u * 2.6 - t * .23 + 1.7) + .04 * Math.sin(u * 4.3 - t * .31 + .5);
+      const SILK = [
+        { y: .56, a: .17, k: 1.1, w: .18, ph: 2, wid: .1, tk: 1.7, n: 48, alpha: .2 },
+        { y: .74, a: .12, k: 1.6, w: .21, ph: 4.2, wid: .07, tk: 2.3, n: 40, alpha: .17 }
       ];
+      const drawDesktop = (ctx, W, H, t) => {
+        const du = Math.PI * 2 / W, N = 60;
+        for (let j = 0; j < N; j++) {
+          const s = j / (N - 1), depth = s ** .75;
+          ctx.strokeStyle = `rgba(255,255,255,${j ? .1 : .55})`;
+          ctx.beginPath();
+          for (let x = 0; x <= W + 8; x += 8) {
+            const u = x * du, top = sea(u, t);
+            const y = H * (top + (.98 - top) * depth + .02 * s * Math.sin(u * 3.1 - t * .3 + s * 6));
+            x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          }
+          ctx.stroke();
+        }
+        for (const r of SILK) {
+          ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
+          for (let j = 0; j < r.n; j++) {
+            const s = j / (r.n - 1) - .5;
+            ctx.beginPath();
+            for (let x = 0; x <= W + 8; x += 8) {
+              const u = x * du;
+              const y = H * (r.y + r.a * Math.sin(u * r.k - t * r.w + r.ph) + .05 * Math.sin(u * 2.7 - t * .27 + r.ph * 1.3)
+                + s * (2 * r.wid * Math.sin(u * r.tk - t * r.w * .8 + r.ph * .6) + .015));
+              x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+            }
+            ctx.stroke();
+          }
+        }
+      };
       document.querySelectorAll("canvas.waves").forEach(cv => {
         const ctx = cv.getContext("2d");
         let W = 0, H = 0, visible = true, raf = 0;
@@ -1125,18 +1153,18 @@
           ctx.clearRect(0, 0, W, H);
           ctx.globalCompositeOperation = "lighter";
           ctx.lineWidth = .7;
-          // Narrow screens see a slice of a wider wave; ribbons are packed together so they overlap
-          const VW = Math.max(W, 900), pack = W < 700 ? .5 : .58, thick = 2 - pack, A = Math.min(H, VW * .45);
-          for (const r of W < 700 ? PHONE_RIBBONS : DESKTOP_RIBBONS) {
+          if (W >= 700) return drawDesktop(ctx, W, H, t);
+          // Phones see a slice of a wider wave; ribbons are packed together so they overlap
+          const VW = 900, pack = .5, thick = 2 - pack, A = Math.min(H, VW * .45);
+          for (const r of PHONE_RIBBONS) {
             ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
             for (let j = 0; j < r.n; j++) {
               const s = j / (r.n - 1);
               ctx.beginPath();
               for (let x = 0; x <= W + 8; x += 8) {
                 const u = x / VW * Math.PI;
-                const ph = r.ph || 0;
-                const y = H * (.64 + (r.y - .62) * pack + (r.tilt || 0) * (x / W - .5)) + (r.dir || 1) * A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist + ph)
-                  + r.a[1] * Math.sin(u * r.f[1] + t * r.s[1] - s * r.twist * .6 + ph * .7)
+                const y = H * (.64 + (r.y - .62) * pack) + A * (r.a[0] * Math.sin(u * r.f[0] + t * r.s[0] + s * r.twist)
+                  + r.a[1] * Math.sin(u * r.f[1] + t * r.s[1] - s * r.twist * .6)
                   + (s - .5) * r.spread * thick * Math.sin(u * 1.4 + t * .1));
                 x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
               }
