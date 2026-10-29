@@ -1105,41 +1105,28 @@
         { n: 42, y: .60, a: [.11, .07], f: [2.4, 1.1], s: [-.18, .14], twist: -3.1, spread: .26, alpha: .16 },
         { n: 36, y: .84, a: [.05, .05], f: [1.1, 2.8], s: [.1, -.09], twist: 1.3, spread: .22, alpha: .13 }
       ];
-      // Desktop, after the cover: a rolling mesh "sea" whose lines stack down to the bottom,
-      // with silk ribbons that swell and narrow (wid) without flipping as they ride over it. Everything rolls rightwards.
-      const sea = (u, t) => .36 + .13 * Math.sin(u * 1.2 - t * .16) + .07 * Math.sin(u * 2.6 - t * .23 + 1.7) + .04 * Math.sin(u * 4.3 - t * .31 + .5);
-      const SILK = [
-        { y: .56, a: .17, k: 1.1, w: .18, ph: 2, wid: .1, tk: 1.7, n: 48, alpha: .2, rock: .22, rs: .16 },
-        { y: .74, a: .12, k: 1.6, w: .28, ph: 4.2, wid: .07, tk: 2.3, n: 40, alpha: .17, rock: .18, rs: .24 }
-      // { y: .74, a: .12, k: 1.6, w: .21, ph: 4.2, wid: .07, tk: 2.3, n: 40, alpha: .17, rock: .18, rs: .22 }
-      
+      // Desktop, after the cover: three mesh sea waves, small at the back to large at the front.
+      // Each has a bright crest line (edge) with lines stacked below it (deep), rolls rightwards
+      // and slowly rocks its angle (rock, rs).
+      const SEAS = [
+        { y: .30, a: [.06, .03, .02], k: [2.4, 4.1, 6.3], w: [.14, .2, .27], ph: 0, n: 24, alpha: .08, edge: .3, deep: .22, rock: .05, rs: .12 },
+        { y: .46, a: [.10, .05, .03], k: [1.6, 3.0, 4.6], w: [.16, .23, .3], ph: 2.1, n: 32, alpha: .09, edge: .4, deep: .3, rock: .07, rs: .15 },
+        { y: .62, a: [.15, .07, .04], k: [1.1, 2.2, 3.6], w: [.18, .25, .33], ph: 4.3, n: 44, alpha: .11, edge: .55, deep: 1, rock: .09, rs: .1 }
       ];
       const drawDesktop = (ctx, W, H, t) => {
-        const du = Math.PI * 2 / W, N = 60;
-        // Slow rocking: each layer's angle swings back and forth on its own rhythm
-        const seaTilt = .08 * Math.sin(t * .14);
-        for (let j = 0; j < N; j++) {
-          const s = j / (N - 1), depth = s ** .75;
-          ctx.strokeStyle = `rgba(255,255,255,${j ? .1 : .55})`;
-          ctx.beginPath();
-          for (let x = 0; x <= W + 8; x += 8) {
-            const u = x * du, top = sea(u, t);
-            const y = H * (top + (.98 - top) * depth + .02 * s * Math.sin(u * 3.1 - t * .3 + s * 6) + seaTilt * (1 - depth) * (x / W - .5));
-            x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-          }
-          ctx.stroke();
-        }
-        for (const r of SILK) {
+        const du = Math.PI * 2 / W;
+        for (const r of SEAS) {
           const tilt = r.rock * Math.sin(t * r.rs + r.ph);
-          ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
           for (let j = 0; j < r.n; j++) {
-            const s = j / (r.n - 1) - .5;
+            const s = j / (r.n - 1), depth = s ** .75;
+            ctx.strokeStyle = `rgba(255,255,255,${j ? r.alpha : r.edge})`;
             ctx.beginPath();
             for (let x = 0; x <= W + 8; x += 8) {
               const u = x * du;
-              const y = H * (r.y + r.a * Math.sin(u * r.k - t * r.w + r.ph) + .05 * Math.sin(u * 2.7 - t * .27 + r.ph * 1.3)
-                + s * (2 * r.wid * (.55 + .45 * Math.sin(u * r.tk - t * r.w * .8 + r.ph * .6)) + .015)
-                + tilt * (x / W - .5));
+              let top = r.y + tilt * (x / W - .5);
+              for (let i = 0; i < 3; i++) top -= r.a[i] * Math.sin(u * r.k[i] - t * r.w[i] + r.ph * (i + 1));
+              const bottom = Math.min(.98, top + r.deep);
+              const y = H * (top + (bottom - top) * depth + .02 * s * Math.sin(u * 3.1 - t * .3 + s * 6));
               x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
             }
             ctx.stroke();
